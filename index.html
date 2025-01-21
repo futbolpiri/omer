@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Tüm Postlar</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+        }
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
+        #container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding: 20px;
+            box-sizing: border-box; /* Kutu modelini doğru ayarla */
+        }
+        .post-bolum {
+            width: calc(50% - 30px); /* Kenar boşluklarını hesaba kat */
+            border: 1px solid #ccc;
+			border-radius: 30px;
+            padding: 10px;
+            box-sizing: border-box;
+            margin: 10px;
+            min-height: 200px; /* Boş olduğunda minimum yükseklik */
+        }
+        .post {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #ffe6e6;
+            word-wrap: break-word;
+			border-radius: 30px;
+        }
+        .green {
+            background-color: #e6ffe6;
+        }
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+            .post-bolum {
+                width: calc(100% - 20px);
+            }
+        }
+        .status {
+            font-style: italic;
+            margin-top: 5px;
+        }
+        footer {
+    background-color: #f8f8f8; /* Arka plan rengi */
+    padding: 20px;
+    text-align: center; /* Metni ortala */
+    border-top: 1px solid #ddd; /* Üst çizgi */
+    margin-top: 20px; /* Üstteki içerikle boşluk */
+    /* Sayfanın altına sabitlemek için aşağıdaki kodları kullanabilirsiniz (isteğe bağlı): */
+    /* position: fixed;
+    bottom: 0;
+    width: 100%; */
+}
+
+.footer-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left; /* Metni sola hizala */
+}
+
+footer p {
+    margin-bottom: 10px; /* Paragraflar arası boşluk */
+    font-size: 14px; /* Yazı boyutu */
+    color: #555; /* Yazı rengi */
+}
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Futbolpiri Tahmin Sistemi</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Anasayfa</a>
+        <a href="iletisim.html">İletişim</a>
+        <a href="istatistik.html">İstatistikler</a>
+    </nav>
+ <center><p>Sayfa otomatik olarak güncellenmektedir. Tahminlerimiz anlık olarak sayfaya düşer.</p></center>
+    <div id="container">
+        <div class="post-bolum" id="canli-postlar">
+            <h2>Canlı Maç Tahminleri</h2>
+        </div>
+        <div class="post-bolum" id="mac-oncesi-postlar">
+            <h2>Maç önü tahmileri</h2>
+        </div>
+    </div>
+
+    <script>
+        const canliPostlar = document.getElementById("canli-postlar");
+        const macOncesiPostlar = document.getElementById("mac-oncesi-postlar");
+
+        function gosterPostlar() {
+            canliPostlar.innerHTML = "<h2>Canlı maç tahminleri</h2>";
+            macOncesiPostlar.innerHTML = "<h2>Maç önü tahminleri</h2>";
+
+            let postlar = JSON.parse(localStorage.getItem("postlar") || "[]");
+
+            let canliPostVar = false;
+            let macOncesiPostVar = false;
+
+            postlar.forEach(post => {
+                const postDiv = document.createElement("div");
+                postDiv.classList.add("post");
+                if (post.green) {
+                    postDiv.classList.add("green");
+                }
+                const statusMessage = post.green ? "TAHMİN KAZANDI" : "MAÇ DEVAM EDİYOR";
+                postDiv.innerHTML = `
+                    <p><b>Lig:</b> ${post.ligAdi}</p>
+                    <p><b>Karşılaşma:</b> ${post.mac}</p>
+                    <p><b>Tahmin:</b> ${post.bahis}</p>
+                    <p><b>Maç skoru ve dakika:</b> ${post.skorDakika}</p>
+                    <p><b>Paylaşım Zamanı:</b> ${post.zaman}</p>
+                    <p><b>Durum:</b> ${statusMessage}</p>
+                `;
+                if (post.tur === "canli") {
+                    canliPostlar.appendChild(postDiv);
+                    canliPostVar = true;
+                } else {
+                    macOncesiPostlar.appendChild(postDiv);
+                    macOncesiPostVar = true;
+                }
+            });
+            if (!canliPostVar) {
+                canliPostlar.innerHTML += "<p>Henüz canlı bir tahmin yok.</p>";
+            }
+            if (!macOncesiPostVar) {
+                macOncesiPostlar.innerHTML += "<p>Henüz maç öncesi tahmin yok.</p>";
+            }
+        }
+
+        gosterPostlar();
+
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'postlar') {
+                gosterPostlar();
+            }
+        });
+    </script>
+<footer>
+    <div class="footer-container">
+        <center><p> Hakkımızda</p></center>
+        <p>Biz, yıllardır futbol tutkusuyla bir araya gelmiş, deneyimli bir tahmin ekibiyiz. Futbolun sadece bir oyun olmadığını, aynı zamanda strateji, analiz ve öngörü gerektiren bir sanat olduğunu düşünüyoruz. Bu inançla, uzun yıllardır futbol maçlarını detaylı bir şekilde inceliyor, istatistikleri derinlemesine analiz ediyor ve en doğru tahminleri sunmak için gece gündüz çalışıyoruz.</p>
+        <p>Grubumuzun temelleri, 2010 yılında birkaç arkadaşın bir araya gelerek futbol üzerine sohbet etmesiyle atıldı. O zamanlar sadece kendi aramızda tahminler yürütürken, zamanla bu tutkuyu daha geniş kitlelerle paylaşmak ve bilgi birikimimizi daha fazla insana ulaştırmak istedik.</p>
+        <p>Bugün, gelişmiş algoritmalar ve uzman analizcilerden oluşan ekibimizle, futbol dünyasındaki en güncel verileri takip ediyor, takımların form durumlarını, oyuncu performanslarını, sakatlıkları, taktiksel yaklaşımları ve daha birçok faktörü göz önünde bulundurarak tahminlerimizi oluşturuyoruz.</p>
+        <p>Amacımız, futbolseverlere maçlar hakkında daha bilinçli kararlar vermelerine yardımcı olmak ve heyecanlarını katlamaktır. Unutmayın, tahminler her zaman %100 doğru olmayabilir, ancak biz, en yüksek doğruluk oranına ulaşmak için sürekli olarak kendimizi geliştiriyoruz.</p>
+        <center><p>Bize güvendiğiniz için teşekkür ederiz. Futbol tutkunuzu bizimle paylaştığınız için minnettarız.</p></center>
+        <center><p>&copy; 2010 Futbolpiri Tahmin Ekibi. Tüm hakları saklıdır.</p></center>
+    </div>
+</footer>
+</body>
+</html>
