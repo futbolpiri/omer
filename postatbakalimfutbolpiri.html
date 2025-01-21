@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="robots" content="noindex, nofollow">
+    <title>Post Yaz ve Listele</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px; /* Sayfa kenarlarında boşluk */
+        }
+        h1, h2, h3 {
+            text-align: center; /* Başlıkları ortala */
+        }
+        label {
+            display: block; /* Etiketleri alt alta göster */
+            margin-bottom: 5px; /* Etiketlerin altında boşluk */
+        }
+        input[type="text"],
+        textarea,
+        select {
+            width: calc(100% - 12px); /* Kenarlıklar için boşluk bırak */
+            padding: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box; /* Padding ve border'ı genişliğe dahil et */
+            border: 1px solid #ccc; /* Kenarlık */
+        }
+        textarea {
+            height: 100px; /* Textarea yüksekliği */
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50; /* Buton rengi */
+            color: white; /* Buton yazı rengi */
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+            border-radius: 5px; /* Buton köşelerini yuvarlat */
+        }
+        button:hover {
+            background-color: #45a049; /* Buton üzerine gelince renk değişimi */
+        }
+        .post-bolum {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .post {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f8f8f8; /* Post arka plan rengi */
+            border-radius: 20px;
+            word-wrap: break-word; /* Uzun kelimeleri kırar */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+        }
+        .green {
+            background-color: #d4edda; /* Green post arka plan rengi */
+            border-color: #c3e6cb; /* Green post kenarlık rengi */
+        }
+        .status {
+            font-style: italic; /* İtalik yazı stili */
+            margin-top: 5px;
+            color: #007bff; /* Durum mesajı rengi */
+        }
+        .sil-post, .greenmaker {
+          margin-top: 5px;
+          margin-right: 5px;
+          padding: 5px 10px;
+          border-radius: 3px;
+          border: none;
+          cursor: pointer;
+        }
+        .sil-post {
+          background-color: #dc3545; /* Sil butonu rengi */
+          color: white;
+        }
+        .sil-post:hover {
+          background-color: #bd2130; /* Sil butonu hover rengi */
+        }
+        .greenmaker {
+          background-color: #007bff; /* Greenmaker butonu rengi */
+          color: white;
+        }
+        .greenmaker:hover {
+          background-color: #0056b3; /* Greenmaker butonu hover rengi */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Yeni Tahmin Yaz</h1>
+
+    <label for="ligAdi">Lig Adı:</label>
+    <input type="text" id="ligAdi"><br>
+
+    <label for="mac">Maç:</label>
+    <input type="text" id="mac"><br>
+
+    <label for="bahis">Bahis:</label>
+    <textarea id="bahis"></textarea><br>
+
+    <label for="skorDakika">Skor ve Dakika:</label>
+    <input type="text" id="skorDakika"><br>
+
+    <label for="tur">Post Türü:</label>
+    <select id="tur">
+        <option value="macOncesi">Maç Öncesi</option>
+        <option value="canli">Canlı</option>
+    </select><br>
+
+    <button onclick="gonder()">Paylaş</button>
+
+    <div id="postListesi">
+        <h2>Gönderilen Postlar</h2>
+        <div class="post-bolum" id="mac-oncesi-postlar-listesi">
+            <h3>Henüz Başlamamış Tahminler</h3>
+        </div>
+        <div class="post-bolum" id="canli-postlar-listesi">
+            <h3>Canlı Maç Tahminleri</h3>
+        </div>
+    </div>
+
+    <script>
+        const ligAdiInput = document.getElementById("ligAdi");
+        const macInput = document.getElementById("mac");
+        const bahisInput = document.getElementById("bahis");
+        const skorDakikaInput = document.getElementById("skorDakika");
+        const turInput = document.getElementById("tur");
+        const macOncesiPostlarListesi = document.getElementById("mac-oncesi-postlar-listesi");
+        const canliPostlarListesi = document.getElementById("canli-postlar-listesi");
+
+        function gosterPostlar() {
+            macOncesiPostlarListesi.innerHTML = "<h3>Maç Öncesi</h3>";
+            canliPostlarListesi.innerHTML = "<h3>Canlı Maçlar</h3>";
+            let postlar = JSON.parse(localStorage.getItem("postlar") || "[]");
+
+            postlar.forEach((post, index) => {
+                const postDiv = document.createElement("div");
+                postDiv.classList.add("post");
+                if (post.green) {
+                    postDiv.classList.add("green");
+                }
+                let statusMessage = post.green ? "<span class='status'>Tahmin Kazandı</span>" : "<span class='status'>Devam Ediyor</span>";
+                postDiv.innerHTML = `
+                    <p><b>Lig:</b> ${post.ligAdi}</p>
+                    <p><b>Maç:</b> ${post.mac}</p>
+                    <p><b>Bahis:</b> ${post.bahis}</p>
+                    <p><b>Skor/Dakika:</b> ${post.skorDakika}</p>
+                    <p><b>Gönderim Zamanı:</b> ${post.zaman}</p>
+                    ${statusMessage}
+                    <button onclick="silPost(${index})">Sil</button>
+                    <button onclick="greenMaker(${index})">Greenmaker</button>
+                `;
+                if (post.tur === "canli") {
+                    canliPostlarListesi.appendChild(postDiv);
+                } else {
+                    macOncesiPostlarListesi.appendChild(postDiv);
+                }
+            });
+            if (canliPostlarListesi.children.length === 1) {
+              canliPostlarListesi.innerHTML += "<p>Henüz canlı bir post yok.</p>";
+            }
+            if (macOncesiPostlarListesi.children.length === 1) {
+              macOncesiPostlarListesi.innerHTML += "<p>Henüz maç öncesi bir post yok.</p>";
+            }
+        }
+
+        function gonder() {
+            let ligAdi = ligAdiInput.value.trim();
+            let mac = macInput.value.trim();
+            let bahis = bahisInput.value.trim();
+            let skorDakika = skorDakikaInput.value.trim();
+            let tur = turInput.value;
+
+            if (ligAdi !== "" && mac !== "" && bahis !== "" && skorDakika !== "") {
+                let postlar = JSON.parse(localStorage.getItem("postlar") || "[]");
+                const now = new Date();
+                const zaman = now.toLocaleString();
+                postlar.push({ ligAdi, mac, bahis, skorDakika, zaman, green: false, tur });
+                localStorage.setItem("postlar", JSON.stringify(postlar));
+                ligAdiInput.value = "";
+                macInput.value = "";
+                bahisInput.value = "";
+                skorDakikaInput.value = "";
+                gosterPostlar();
+            } else {
+                alert("Lütfen tüm alanları doldurun!");
+            }
+        }
+
+        function silPost(index) {
+            if (confirm("Postu silmek istediğinizden emin misiniz?")) {
+                let postlar = JSON.parse(localStorage.getItem("postlar") || "[]");
+                postlar.splice(index, 1);
+                localStorage.setItem("postlar", JSON.stringify(postlar));
+                gosterPostlar();
+            }
+        }
+
+        function greenMaker(index) {
+            let postlar = JSON.parse(localStorage.getItem("postlar") || "[]");
+            postlar[index].green = !postlar[index].green;
+            localStorage.setItem("postlar", JSON.stringify(postlar));
+            gosterPostlar();
+        }
+
+        gosterPostlar();
+    </script>
+
+</body>
+</html>
